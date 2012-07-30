@@ -1,89 +1,167 @@
 
-var JiggybitFormSelect, JiggybitFormSelectDefaults;
+//var JiggybitFormSelect, JiggybitFormSelectDefaults;
 
 (function($) {
     
     /**
-     * Default settings for the 
+     * Default settings for replacement selects elements
      */
-    JiggybitFormSelectDefaults =
-    {
-        /**
-         * Width for the select box
-         * @type {integer}
-         */
-        width: 200,
-        
-        /**
-         * Heightfor the select box
-         * @type {integer}
-         */
-        height: 20,
-        
-        /**
-         * z-index assigned to elements that should be placed above anything else
-         * @var {integer}
-         */
-        zIndexAbsTop: 99999,
-        
-        /**
-         * Attach a custom class name to the outer element of the replacement element
-         * @var {string}
-         */
-        className: '',
-        
-        /**
-         *
-         */
-        dropdownMaxHeight: 200,
-
-        /**
-         * Allows forcing a dropdown to fold up or down
-         * @type {string} auto|up|down
-         */
-        dropdownDirection: 'auto',
-        
-        /**
-         * Callback method that allows one to customise the way the replacement 
-         * options are being rendered
-         * @type {function}
-         */
-        decorateOption: null,
-
-        /**
-         * Callback method that allows one to customise the way the currently 
-         * selected value is being displayed
-         * @type {function}
-         */
-        decorateValue: null,
-
-        /**
-         * Callback method that can be used to animate the expansion of the 
-         * dropdown instead of it simply being made visible.
-         * @type {function}
-         */
-        animateExpand: null,
-        
-        /**
-         * Callback method that can be used to animate the collapsing of the 
-         * dropdown instead of it simply being hidden.
-         * @type {function}
-         */
-        animateCollapse: null
-        
-    };
+//    jiggybit.form.plugins.select.defaults =
+//    //JiggybitFormSelectDefaults =
+//    {
+//        /**
+//         * Width for the select box
+//         * @type {integer}
+//         */
+//        width: 200,
+//        
+//        /**
+//         * Heightfor the select box
+//         * @type {integer}
+//         */
+//        height: 20,
+//        
+//        /**
+//         * z-index assigned to elements that should be placed above anything else
+//         * @var {integer}
+//         */
+//        zIndexAbsTop: 99999,
+//        
+//        /**
+//         * Attach a custom class name to the outer element of the replacement element
+//         * @var {string}
+//         */
+//        className: '',
+//        
+//        /**
+//         *
+//         */
+//        dropdownMaxHeight: 200,
+//
+//        /**
+//         * Allows forcing a dropdown to fold up or down
+//         * @type {string} auto|up|down
+//         */
+//        dropdownDirection: 'auto',
+//        
+//        /**
+//         * Callback method that allows one to customise the way the replacement 
+//         * options are being rendered
+//         * @type {function}
+//         */
+//        decorateOption: null,
+//
+//        /**
+//         * Callback method that allows one to customise the way the currently 
+//         * selected value is being displayed
+//         * @type {function}
+//         */
+//        decorateValue: null,
+//
+//        /**
+//         * Callback method that can be used to animate the expansion of the 
+//         * dropdown instead of it simply being made visible.
+//         * @type {function}
+//         */
+//        animateExpand: null,
+//        
+//        /**
+//         * Callback method that can be used to animate the collapsing of the 
+//         * dropdown instead of it simply being hidden.
+//         * @type {function}
+//         */
+//        animateCollapse: null
+//        
+//    };
     
     /**
      * Aims to extend the plugin with support for custom <select> fields
      * @type {object}
      */
-    JiggybitFormSelect = 
+    //JiggybitFormSelect = 
+    jiggybit.form.plugins.select = 
     {
         /**
-         * Temporary reference to the jQuerified original select element
-         * @param {HTMLElement}
+         * Default settings for replacement selects elements
+         */
+        settings: {
+            
+            /**
+             * Width for the select box
+             * @type {integer}
+             */
+            width: 200,
+
+            /**
+             * Heightfor the select box
+             * @type {integer}
+             */
+            height: 20,
+
+            /**
+             * z-index assigned to elements that should be placed above anything else
+             * @type {integer}
+             */
+            zIndexAbsTop: 99999,
+
+            /**
+             * Attach a custom class name to the outer element of the replacement element
+             * @type {string}
+             */
+            className: '',
+
+            /**
+             *
+             */
+            dropdownMaxHeight: 200,
+
+            /**
+             * Allows forcing a dropdown to fold up or down
+             * @type {string} auto|up|down
+             */
+            dropdownDirection: 'auto',
+
+            /**
+             * Callback method that allows one to customise the way the replacement 
+             * options are being rendered
+             * @type {function}
+             */
+            decorateOption: null,
+
+            /**
+             * Callback method that allows one to customise the way the currently 
+             * selected value is being displayed
+             * @type {function}
+             */
+            decorateValue: null,
+
+            /**
+             * Callback method that can be used to animate the expansion of the 
+             * dropdown instead of it simply being made visible.
+             * @type {function}
+             */
+            animateExpand: null,
+
+            /**
+             * Callback method that can be used to animate the collapsing of the 
+             * dropdown instead of it simply being hidden.
+             * @type {function}
+             */
+            animateCollapse: null
+        },
+        
+        /**
+         * Reference to the jQuerified original select element
+         * @type {HTMLElement}
          */
         jqSelect: null,
+        
+        /**
+         * Counter for options in a select element that contains optgroup nodes.
+         * jQuery's index() method doesn't get the job done in such cases
+         * @type {Integer}
+         */
+        optionCount: 0,
         
         /**
          * Contructs everything around creating the custom select element
@@ -109,7 +187,7 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                     top: this.jqSelect.css('top')
                 },
                 attr: {
-                    tabindex: this.jqSelect.css('tabindex')
+                    tabindex: this.jqSelect.attr('tabindex')
                 }
             });
             
@@ -127,11 +205,13 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
 
             // Check if there is any <label> elements in this page related to the original
             // element that we need to reference to our replacement widget
+            // @todo consider wether to search only within the scope of the form
             if (select.id) {
                 $('label[for="'+select.id+'"]').each(function() {
                     // Update for attribute
                     $(this).attr('for', pseudoSelect.attr('id'));
-                    $(this).click(function() {
+                    $(this).click(function(event) {
+                        event.preventDefault();
                         var identifier = $(this).attr('for');
                         $('#'+identifier).focus();
                     });
@@ -158,14 +238,14 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                     //if (!pseudoSelect.data('state').disabled) {
                     var state = pseudoSelect.data('state');
                     if (state == undefined || !pseudoSelect.data('state').disabled) {
-                        pseudoSelect.addClass('hover');
+                        pseudoSelect.addClass('jb-f-hover');
                     }
                 },
                 mouseout: function() {
                     // Check if its disabled before adding a CSS class to unmark the state
                     var state = pseudoSelect.data('state');
                     if (state == undefined || !pseudoSelect.data('state').disabled) {
-                        pseudoSelect.removeClass('hover');
+                        pseudoSelect.removeClass('jb-f-hover');
                     }
                 },
                 click: function() {
@@ -183,9 +263,31 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                     var state = pseudoSelect.data('state');
                     if (state == undefined || !pseudoSelect.data('state').disabled) {
                         // Mark element as focused
-                        pseudoSelect.addClass('focus');
+                        pseudoSelect.addClass('jb-f-focus');
                         // Bind document wide event handler that prevents page scrolling on using arrow keys
                         $(document).bind('keydown', preventPageScroll);
+                        
+                        // for mouse scrolling in Firefox
+                        //var elem = document.getElementById("myDiv");
+                        //console.log($(this).data('options').get()[0]);
+//                        var elem = $(this).data('options').get()[0];
+//                        if (elem.addEventListener) { // all browsers except IE before version 9
+//                            // Internet Explorer, Opera, Google Chrome and Safari
+//                            elem.addEventListener("mousewheel", function(evt) { preventMouseScroll(evt, elem) }, false);
+//                            // Firefox
+//                            elem.addEventListener("DOMMouseScroll", function(evt) { preventMouseScroll(evt, elem) }, false);
+//                        } else { // IE before version 9
+//                            if (elem.attachEvent) elem.attachEvent("onmousewheel", preventMouseScroll);
+//                        }                        
+                        
+                        //console.log(pseudoSelect.data('options'));
+                        
+//                        pseudoSelect.scroll(function(evt) {
+//                            evt.preventDefault();
+//                        });
+//                        pseudoSelect.data('options').scroll(function(evt) {
+//                            evt.preventDefault();
+//                        });
                     }
                 },
                 blur: function() {
@@ -196,7 +298,7 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                             // Collapse dropdown
                             THIS.selectCollapse(pseudoSelect);
                             // Stop marking label as focused
-                            pseudoSelect.removeClass('focus');
+                            pseudoSelect.removeClass('jb-f-focus');
                         }
                         // Unbind document wide event handler that prevents page scrolling on using arrow keys
                         $(document).unbind('keydown', preventPageScroll);
@@ -219,13 +321,42 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                         var keyCodeChar = String.fromCharCode(event.keyCode);
                         
                         if (event.keyCode == 38) { // Arrow up
-                            if (select.selectedIndex > 0) {
-                                THIS.selectVal(pseudoSelect, select.selectedIndex - 1);
+                            // If not reached the first option
+                            if (pseudoSelect.data('expanded') !== 0 && pseudoSelect.data('options').find('li.jb-f-hover').length) {  // Expanded
+                                var idx = pseudoSelect.data('options').find('li.jb-f-hover').index();
+                                // If not reached the last option
+                                if (idx > 0) {
+                                    THIS.selectVal(pseudoSelect, idx - 1);
+                                }
+                            } else {
+                                if (select.selectedIndex > 0) {
+                                    THIS.selectVal(pseudoSelect, select.selectedIndex - 1);                                
+                                }                                
                             }
                         } else if (event.keyCode == 40) { // Arrow down
-                            if (select.selectedIndex < (select.options.length - 1)) {
-                                THIS.selectVal(pseudoSelect, select.selectedIndex + 1);
+                            // If expanded, check if anything is marked as hovered, else go off selected index
+                            if (pseudoSelect.data('expanded') !== 0 && pseudoSelect.data('options').find('li.jb-f-hover').length) {  // Expanded
+                                var idx = pseudoSelect.data('options').find('li.jb-f-hover').index();
+                                // If not reached the last option
+                                if (idx < (select.options.length - 1)) {
+                                    THIS.selectVal(pseudoSelect, idx + 1);
+                                }
+                            } else {
+                                // If not reached the last option
+                                if (select.selectedIndex < (select.options.length - 1)) {
+                                    THIS.selectVal(pseudoSelect, select.selectedIndex + 1);
+                                }
                             }
+                        } else if (event.keyCode == 13) { // Enter
+                            // Set value currently hovered
+                            if (pseudoSelect.data('options').find('li.jb-f-hover').length) {
+                                idx = pseudoSelect.data('options').find('li.jb-f-hover').index();
+                            } else {
+                                idx = select.selectedIndex;
+                            }
+                            THIS.selectVal(pseudoSelect, idx);
+                            THIS.selectCollapse(pseudoSelect);
+                           
                         } else if (validChars.indexOf(keyCodeChar) != -1) {
                             // Detect a string a characters entered within 250ms of each other
                             pseudoSelect.data('characters', pseudoSelect.data('characters') ? pseudoSelect.data('characters') + keyCodeChar : keyCodeChar);
@@ -256,7 +387,19 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
             // Mimic original element state
             if (this.jqSelect.is(':visible') == false) this.hide(pseudoSelect);
             if (select.disabled) this.disable(pseudoSelect);
-            
+
+            // Setup mouse scroll behavior for dropdown
+            var jqElem = pseudoSelect.data('options');
+            var elem = jqElem.get()[0];
+            if (elem.addEventListener) { // all browsers except IE before version 9
+                // Internet Explorer, Opera, Google Chrome and Safari
+                elem.addEventListener("mousewheel", function(evt) { THIS.preventMouseScroll(evt, jqElem); }, false);
+                // Firefox
+                elem.addEventListener("DOMMouseScroll", function(evt) { THIS.preventMouseScroll(evt, jqElem); }, false);
+            } else { // IE before version 9
+                if (elem.attachEvent) elem.attachEvent("onmousewheel", function(evt) { THIS.preventMouseScroll(evt, jqElem); });
+            }
+
             // Monitor original element for changes on a set interval
             //if (this.settings.observer.enabled) this.observe(select, pseudoSelect);
             
@@ -265,41 +408,65 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
         },
         
         /**
+         * Prevents page scroll from mouse scroll event and instead updates 
+         * the scroll offset of the dropdowon list
+         * 
+         * @param {event} event Native browser mousewheel event
+         * @param {HTMLElement} el jQuerified ul element
+         */
+        preventMouseScroll: function(event, el)
+        {
+            event.preventDefault();              
+
+            // Determine delta
+            if (event.wheelData) delta = -event.detail / 3;
+            if (event.detail) delta = -event.detail / 3;
+            if (typeof event.wheelDeltaY !== "undefined") delta = event.wheelDeltaY / 120;
+
+            // Update scroll offset
+            el.scrollTop(el.scrollTop() - delta * 30);                
+        },
+        
+        /**
          * Builds custom select element from parts
          * 
+         * @todo consider if we can convert this to a single DOM modification call
+         * 
          * @private
-         * @param {HTMLElement} select Unmodified <select> element
-         * @return {HTMLElement} Custom built pseudo select element
+         * @param {HTMLElement} select Unmodified <i>select</i> element
+         * @return {HTMLElement} Custom built pseudo <i>select</i> element
          */
         selectBuild: function(select)
         {
             // Create custom element
-            var pseudoSelect = $('<div />', {
+            var pseudoSelect = $(document.createElement('div'))
+                .attr({
                     // Copy the tab index of the original element across
                     tabindex: select.tabindex ? select.tabindex : 0,
                     // Give it a unique id attribute
                     id: select.id ? select.id + '-pseudo' : 'pseudo-' + new Date().getTime()
                 })
-                .addClass('jb-select' + (this.settings.className != '' ? ' ' + this.settings.select.className : ''))
+                .addClass('jb-f-select' + (this.settings.select.className != '' ? ' ' + this.settings.select.className : ''))
                 .css({
                     width: this.settings.width
                 });
                 
             // Element to display current selected value
-            $('<div />')
-                .addClass('jb-value')
+            $(document.createElement('div'))
+                .addClass('jb-f-value')
                 .css({ // Prevent text from being selected
                     '-webkit-user-select': 'none',
                     '-khtml-user-select': 'none',
                     '-moz-user-select': 'none',
                     '-o-user-select': 'none',
+                    '-ms-user-select': 'none',
                     'user-select': 'none'
                 })
                 .appendTo(pseudoSelect);
                 
             // Arrow
-            $('<span />')
-                .addClass('jb-arrow')
+            $(document.createElement('span'))
+                .addClass('jb-f-arrow')
                 .appendTo(pseudoSelect);
                 
             // Add options and option groups
@@ -313,16 +480,16 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
          * Builds option list for custom dropdown
          *
          * @private
-         * @param {HTMLElement} select Original <select> element
-         * @param {HTMLElement} pseudoSelect jQueryfied custom select element
+         * @param {HTMLElement} select Original <i>select</i> element
+         * @param {HTMLElement} pseudoSelect jQueryfied custom <i>select</i> element
          * @return void
          */
         selectBuildOptions: function(select, pseudoSelect)
         {
             var THIS = this;
             
-            var optionsList = $('<ul />')
-                .addClass('jb-select-options')
+            var optionsList = $(document.createElement('ul'))
+                .addClass('jb-f-select-options')
                 .css({
                     display: 'none',
                     zIndex: this.settings.select.zIndexAbsTop,
@@ -336,8 +503,12 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                         pseudoSelect.data('noblur', 0);
                     }
                 });
-                
-            // Iterate original elements' children
+            
+            // Reset option counter to aid correct index management on 
+            // option/optgroup construction
+            this.optionCount = 0;
+            
+            // Iterate original elements' children\
             this.jqSelect.children().each(function(idx) {
                 // jQuerify once
                 var jqOption = $(this);
@@ -345,11 +516,13 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                 // Check if is option or optgroup
                 if (jqOption.is('option')) {
                     
-                    optionsList.append(THIS.selectBuildOption(jqOption, idx, select, pseudoSelect));
+                    optionsList.append(THIS.selectBuildOption(jqOption, THIS.optionCount, select, pseudoSelect));
+                    //optionsList.append(THIS.selectBuildOption(jqOption, idx, select, pseudoSelect));
+                    THIS.optionCount++;
                     
                 } else if (jqOption.is('optgroup')) {
                     
-                    optionsList.append(THIS.selectBuildOptgroup());
+                    optionsList.append(THIS.selectBuildOptgroup(jqOption, select, pseudoSelect));
                     
                 }
             });
@@ -374,11 +547,11 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
          * Builds pseudo selection option as <li />
          * 
          * @private
-         * @param {HTMLElement} jqOption jQuerified <option>
-         * @param {integer} idx Index of <option> node in the list
-         * @param {HTMLElement} select Original <select> element
+         * @param {HTMLElement} jqOption jQuerified <i>option<</i>
+         * @param {integer} idx Index of <i>option<</i> node in the list
+         * @param {HTMLElement} select Original <i>select<</i> element
          * @param {HTMLElement} pseudoSelect Custom select element
-         * @return {HTMLElement} Pseudo option <li> node
+         * @return {HTMLElement} Pseudo option <i>li</i> node
          */
         selectBuildOption: function(jqOption, idx, select, pseudoSelect)
         {
@@ -393,14 +566,15 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                 option = '<span>' + jqOption.text() + '</span>';
             }
             
-            return $('<li />')
-                .addClass('jb-option' + (jqOption.is(':disabled') ? ' jb-disabled' : ''))
+            return $(document.createElement('li'))
+                .addClass('jb-f-option' + (jqOption.is(':disabled') ? ' jb-f-disabled' : ''))
                 .html(option)
                 .css({ // Prevent text from being selected
                     '-webkit-user-select': 'none',
                     '-khtml-user-select': 'none',
                     '-moz-user-select': 'none',
                     '-o-user-select': 'none',
+                    '-ms-user-select': 'none',
                     'user-select': 'none'
                 })
                 .bind({
@@ -412,26 +586,26 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                         //var idx = $(this).inde
                         
                         var optionsList = pseudoSelect.data('options');
-                        THIS.log('idx '+ idx);
 
                         // Not allowed when option is disabled
-                        if (pseudoSelect.data('options').children('.option:nth-child(' + (idx + 1) + ')').hasClass('disabled')) return false;
+                        if (pseudoSelect.data('options').find('.jb-f-option:nth-child(' + idx + ')').hasClass('jb-f-disabled')) return false;
 
                         // Set new value
                         THIS.selectVal(pseudoSelect, idx);
 
-                        // Collapse optoins list
+                        // Collapse options list
                         THIS.selectCollapse(pseudoSelect);
 
                         // Mark selected option with class name
-                        optionsList.children('.option').removeClass('selected');
-                        optionsList.children('.option:nth-child(' + (idx + 1) + ')').addClass('selected');
+                        optionsList.find('.jb-f-option').removeClass('jb-f-selected');
+                        optionsList.find('.jb-f-option:eq(' + idx + ')').addClass('jb-f-selected');
 
                         // Re-focus element
                         pseudoSelect.focus();
 
-                        // Check if value has actually changed. If so fire attached onchange events
+                        // Check if value has actually changed. If so,  fire attached onchange events
                         if (currentIndex != originalElement.selectedIndex) {
+                            // @todo work out a way to do this without eval()
                             // onchange attribute
                             var test = 'originalElement.onchange';
                             var execute = 'originalElement.onchange()';
@@ -440,14 +614,13 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                             // Programatically attached change() events
                             $(originalElement).trigger('change');
                         }
-                        
                         //THIS.selectVal(pseudoSelect, idx);
                     },
                     mouseenter: function() {
-                        $(this).addClass('jb-hover');
+                        $(this).addClass('jb-f-hover');
                     },
                     mouseleave: function() {
-                        $(this).removeClass('jb-hover');
+                        $(this).removeClass('jb-f-hover');
                     }
                 })
                 // IE6 layout hack so that not only the text is sensitive for 
@@ -459,10 +632,35 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
          *
          * @todo
          * @private
-         * @return {HTMLElement} Pseudo optgroup <li> node with nested <ul>
+         * @param {HTMLElement} optgroup jQuerified <i>option<</i>
+         * @param {HTMLElement} select Original <i>select</i> element
+         * @param {HTMLElement} pseudoSelect Custom <i>select</i> element
+         * @return {HTMLElement} Pseudo optgroup <i>li</i> node with nested <i>ul</i>
          */
-        selectBuildOptgroup: function()
+        selectBuildOptgroup: function(optgroup, select, pseudoSelect)
         {
+            var THIS = this;
+            var li = $(document.createElement('li'))
+                .html('<span class="jb-f-label">'+optgroup.attr('label')+'</span>');
+            
+            var ul = $(document.createElement('ul'));
+//            console.log(optgroup);
+//            console.log(optgroup.attr('label'));
+            
+            optgroup.find('option').each(function() {
+                // jQuerify once
+                var jqOption = $(this);                
+                ul.append(THIS.selectBuildOption(jqOption, THIS.optionCount, select, pseudoSelect));
+                //ul.append(THIS.selectBuildOption(jqOption, jqOption.index()+idx, select, pseudoSelect));
+                
+                THIS.optionCount++;
+            });
+            
+            ul.appendTo(li);
+            
+            //console.log(li);
+            
+            return li;
             
         },
         
@@ -479,7 +677,7 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
             var select = pseudoSelect.data('originalElement');
             
             // Update custom control using the new selectedIndex
-            var label = pseudoSelect.find('div.jb-value');
+            var label = pseudoSelect.find('div.jb-f-value');
             // Check if a decorator callback was given
             if (this.settings.select.decorateValue !== null) {
                 // Let the decorator callback build the html for the selected 
@@ -490,6 +688,17 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
                 // Simply fetch the text of the real option element
                 label.html(select.options[idx].text);
             }
+            var optionsList = pseudoSelect.data('options');
+            // Remove hover and selected markers
+            optionsList.find('.jb-f-option').removeClass('jb-f-hover jb-f-selected');
+
+            // If option list is expanded, update hover state
+            if (pseudoSelect.data('expanded') !== 0) {
+                // Mark selected option as selected
+                // @todo move to selectExpand function (only useful if expanded after value has been selected)
+                optionsList.find('.jb-f-option:eq('+idx+')').addClass('jb-f-selected');
+            }
+            
             // Set value of real select  element
             select.options[idx].selected = true;
         },
@@ -539,7 +748,6 @@ var JiggybitFormSelect, JiggybitFormSelectDefaults;
             // Otherwise we'll reverse gravity
             var spaceAbove = offset.top - $(window).scrollTop();            
             var spaceBelow = $(window).height() - spaceAbove - pseudoSelectHeight;
-            
             
             // Check if there is more space above than below
             if (spaceBelow <= optionsListHeight && spaceAbove > spaceBelow) direction = 'up';

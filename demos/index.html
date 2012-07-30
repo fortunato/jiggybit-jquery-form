@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Example 01</title>
+        
+        <link rel="stylesheet" type="text/css"  media="all" charset="utf-8"  href="css/style.css" />
+    </head>
+    <body>
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <form name="jiggybit-form" action="">
+            <fieldset>
+                <legend>Example 01</legend>
+                <div>
+                    <label for="how-many-limbs">How many limbs does a typical human being carry?</label>
+                    <select name="how-many-limbs" class="simple" id="how-many-limbs">
+                        <option value="">Select ...</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                        <option value="4">Four</option>
+                        <option value="5">Five</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Please select an option in one of the groups:</label>
+                    <select name="favorite-group" class="optgroups">
+                        <option value="">Select ...</option>
+                        <optgroup label="Group 1">
+                            <option value="1">One</option>
+                            <option value="2">Two</option>
+                        </optgroup>
+                        <option value="abandoned">Abandoned</option>
+                        <optgroup label="Group 2">
+                            <option value="3">Three</option>
+                            <option value="4">Four</option>
+                        </optgroup>
+                        <option value="5">Five</option>
+                        <option value="6">Six</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="check-me">Check me:</label>
+                    <input type="checkbox" name="checkme" id="check-me" />
+                </div>
+                <div>
+                    <label for="another-checkbox">Check me too:</label>
+                    <input type="checkbox" name="anothercheckbox" id="another-checkbox" />
+                </div>
+            </fieldset>
+        </form>
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+        <script src="../libs/jquery-1.7.1.js"></script>
+        <script src="../libs/jquery.validate-1.8.1.js"></script>
+        <script src="../jquery.jiggybit.form.js"></script>
+        <script src="../jiggybit.form.select.js"></script>
+        <script src="../jiggybit.form.checkbox.js"></script>
+        <script src="../jiggybit.form.radio.js"></script>
+        
+        <script>
+            // @todo remove
+//            window.log=function(){log.history=log.history||[];log.history.push(arguments);if(this.console){arguments.callee=arguments.callee.caller;var a=[].slice.call(arguments);(typeof console.log==="object"?log.apply.call(console.log,console,a):console.log.apply(console,a))}};
+//            (function(b){function c(){}for(var d="assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,timeStamp,profile,profileEnd,time,timeEnd,trace,warn".split(","),a;a=d.pop();){b[a]=b[a]||c}})((function(){try
+//            {console.log();return window.console;}catch(err){return window.console={};}})());
+
+            var jbFormSimple = $('select.simple').JiggybitForm({
+                debug: true,
+                select: {
+                    className: 'very-jiggy'
+                },
+                observer: {
+                    enabled: false
+                }
+            });
+            var jbFormCheckbox = $('input[type="checkbox"]').JiggybitForm({
+                debug: true,
+                checkbox: {
+                    className: 'very-jiggy'
+                },
+                observer: {
+                    enabled: false
+                }
+            });
+//            var jbFormSimple2 = $('select.optgroups').JiggybitForm({
+//                debug: true,
+//                select: {
+//                    className: 'very-jiggy'
+//                }
+//            });
+            
+            //console.log(jiggybit);
+            
+            //jbFormSimple.destroy();
+
+        </script>
+        
+    </body>
+</html>
