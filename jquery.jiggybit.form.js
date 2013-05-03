@@ -1,13 +1,11 @@
 /**
  * Assign jQuery to $ as shorthand
  */
-
-//var JiggybitForm;
-
 (function($) {
 
     // Create jigybit namespace if doesn't exist
-    window.jiggybit = typeof(window.jiggybit) == 'undefined' ? {} : window.jiggybit;
+    window.jiggybit = typeof(window.jiggybit) === 'undefined' ? {} : window.jiggybit;
+    window.jiggybit.formPlugins = typeof(window.jiggybit.formPlugins) === 'undefined' ? {} : window.jiggybit.formPlugins;
     
     /**
      * Create JiggybitForm in the jQuery fn namespace
@@ -22,56 +20,11 @@
          * @return {$.fn.JiggybitForm}
          */
         JiggybitForm: function(options) {
-            
-            // Start with loading plugins available on this page
-            var enabledPlugins = new Array();
-            
             // Iterate available plugins
-            for (plugin in jiggybit.form.plugins) {
+            for (plugin in jiggybit.formPlugins) {
                 // Use plugin defaults
-                $.extend(jiggybit.form.defaults[plugin], jiggybit.form.plugins[plugin].settings);
-                // Add plugin methods 
-                $.extend(jiggybit.form, jiggybit.form.plugins[plugin]);
-                // Mark plugin as loaded
-                enabledPlugins.push(plugin);
+                $.extend(jiggybit.form.defaults[plugin], jiggybit.formPlugins[plugin].defaults);
             }
-            
-            // Select
-            //console.log(eval('JiggybitFormSelect'));
-//            if (typeof JiggybitFormSelect != "undefined") {
-//                // Use plugin defaults
-//                $.extend(jiggybit.form.defaults.select, JiggybitFormSelectDefaults);
-//                // Add plugin methods 
-//                $.extend(jiggybit.form, JiggybitFormSelect);
-//                // Mark plugin as loaded
-//                enabledPlugins.push('select');
-//            }
-//            
-//            // Color swatches
-//            // ..
-//            
-//            // Radio
-//            if (typeof JiggybitFormRadio != "undefined") {
-//                // Use plugin defaults
-//                $.extend(jiggybit.form.defaults.radio, JiggybitFormRadioDefaults);
-//                // Add plugin methods 
-//                $.extend(jiggybit.form, JiggybitFormRadio);
-//                // Mark plugin as loaded
-//                enabledPlugins.push('radio');
-//            }
-//            
-//            // On/off radio button variant? or can we solve all through CSS?
-//            
-//            
-//            // Checkbox
-//            if (typeof JiggybitFormCheckbox != "undefined") {
-//                // Use plugin defaults
-//                $.extend(jiggybit.form.defaults.checkbox, JiggybitFormCheckboxDefaults);
-//                // Add plugin methods 
-//                $.extend(jiggybit.form, JiggybitFormCheckbox);
-//                // Mark plugin as loaded
-//                enabledPlugins.push('checkbox');
-//            }
             
             // Now complete creating the plugin prototype
             $.extend($.fn.JiggybitForm.prototype, {
@@ -80,7 +33,7 @@
             });
             
             // Initialise and return the plugin instance
-    		return new $.fn.JiggybitForm.prototype(options, this, enabledPlugins);
+    		return new $.fn.JiggybitForm.prototype(options, this);
         }
     });
     
@@ -88,10 +41,9 @@
      * Attaches the settings to the plugin and instantiates it
      * @type {Prototype}
      */
-    $.fn.JiggybitForm.prototype = function(options, fields, enabledPlugins) {
-       this.settings = $.extend( true, {}, $.fn.JiggybitForm.prototype.defaults, options);
+    $.fn.JiggybitForm.prototype = function(options, fields) {
+       this.settings = $.extend(true, {}, $.fn.JiggybitForm.prototype.defaults, options);
        this.fields = fields;
-       this.enabledPlugins = enabledPlugins;
        this.initialize();
     };
     
@@ -99,9 +51,8 @@
      * 
      * @type {object}
      */
-    //var JiggybitForm = 
-    jiggybit.form = 
-    {
+    jiggybit.form = {
+
         /**
          * Default settings for this plugin
          * @type {object}
@@ -114,12 +65,6 @@
              */
             debug: false,
             
-            /**
-             * Contains a key/value pair for each enabled plugin
-             * @type {array}
-             */
-            enabledPlugins: [],
-
             /**
              * Placeholder for the default settings of the select plugin
              * @type {object}
@@ -219,7 +164,7 @@
          */
         initialize: function()
         {
-            var THIS = this;
+            var _this = this;
             
             // Iterate enabled plugins and set some convenient booleans to check
             // support against
@@ -230,24 +175,29 @@
             // Let's start with some iteration over the collected form fields
             // and get the party started
             this.fields.each(function(idx) {
-                
                 // Check if this elements hasn't already been customized
                 // first come first serve
                 if ($(this).data('jigyybit-form') !== true) {
                     // Check the type of element we're dealing with
                     switch (this.type) {
-                        
                         case 'select-one':
-                            if (THIS.settings.select.enabled == true) THIS.selectInit(this);
+                            console.log(_this.settings);
+                            try {
+                                new jiggybit.formPlugins.select(this, _this.settings);
+                            }
+                            catch(e) {
+                                if (this.settings.debug === true) {
+                                    console.log('Failed to initialise plugin', e);
+                                }
+                            }
+//                                new jiggybit.formPlugins.select(this, _this.settings);
+//                            }
                             break;
-                            
                         case 'checkbox':
-                            if (THIS.settings.checkbox.enabled == true) THIS.checkboxInit(this);
+                            if (_this.settings.checkbox.enabled === true) _this.checkboxInit(this);
                             break;
                     }
-                    
                 }
-                
                 //THIS.copyEvents(this);
             });
             
@@ -265,14 +215,8 @@
             
             this.observer.unregisterElement($('#how-many-limbs'));
             
-
-
-//            this.log(this);
-            
+           
             //if (this.defaults.debug == true) this.setupLog();
-            
-//            this.log($('body'));
-//            this.log(this.fields);
         },
 
         /**
@@ -503,7 +447,6 @@
     jiggybit.form.observer.prototype = 
     {
         elements: [],
-        //elements: $([]),
         
         interval: {},
         
@@ -533,7 +476,7 @@
             this.elements = this.elements.filter(function(idx) {
                 return this.get(0) !== pseudo.get(0);
             });
-            console.log(this.elements);
+            //console.log(this.elements);
         },
         
         startObserving: function()
