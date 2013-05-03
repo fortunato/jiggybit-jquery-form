@@ -481,7 +481,7 @@
         
         startObserving: function()
         {
-            var THIS = this;
+            var _this = this;
             
             this.interval = setInterval(function() {
                 
@@ -503,7 +503,7 @@
      */
     jiggybit.form.observer.getInstance = function()
     {
-        if (jiggybit.form.observer.instance == undefined)
+        if (jiggybit.form.observer.instance === undefined)
             jiggybit.form.observer.instance = new jiggybit.form.observer();
         return jiggybit.form.observer.instance;
     };
