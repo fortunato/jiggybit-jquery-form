@@ -165,11 +165,46 @@
             // Get default value across
             this.select(this.$select[0].selectedIndex);
 
-            // Can be called to prevent default arrow keyup behavior when the
-            // <select> has focus
-            var preventPageScroll = function(event) {
-                if (event.keyCode === 38 || event.keyCode === 40) event.preventDefault();
-            };
+            this.setupEventListeners();
+
+            // Mimic original element state
+            if (this.$select.is(':visible') === false) this.hide();
+            if (select.disabled) this.disable();
+
+            // Setup mouse scroll behavior for dropdown
+            var $options = this.$pseudo.data('options');
+            var option = $options.get()[0];
+            if (option.addEventListener) { // all browsers except IE before version 9
+                // Internet Explorer, Opera, Google Chrome and Safari
+                option.addEventListener("mousewheel", function(evt) { _this.preventMouseScroll(evt); }, false);
+                // Firefox
+                option.addEventListener("DOMMouseScroll", function(evt) { _this.preventMouseScroll(evt); }, false);
+            } else { // IE before version 9
+                if (option.attachEvent) option.attachEvent("onmousewheel", function(evt) { _this.preventMouseScroll(evt); });
+            }
+
+            // Monitor original element for changes on a set interval
+            //if (this.settings.observer.enabled) this.observe(select, pseudoSelect);
+
+            // Add new pseudo element to the collection
+            //this.pseudoFields.push(pseudoSelect);
+        },
+
+        /**
+         * Can be called to prevent default arrow keyup behavior when the (pseudo)
+         * select has focus
+         *
+         * @param {object} event
+         * @returns {undefined}
+         */
+        preventPageScroll: function(event)
+        {
+            if (event.keyCode === 38 || event.keyCode === 40) event.preventDefault();
+        },
+
+        setupEventListeners: function()
+        {
+            var _this = this;
 
             // Setup event listeners
             this.$pseudo.bind({
@@ -205,7 +240,7 @@
                         // Mark element as focused
                         _this.$pseudo.addClass('jb-f-focus');
                         // Bind document wide event handler that prevents page scrolling on using arrow keys
-                        $(document).bind('keydown', preventPageScroll);
+                        $(document).bind('keydown', function(event) { _this.preventPageScroll(event); });
                     }
                 },
                 blur: function() {
@@ -219,7 +254,7 @@
                             _this.$pseudo.removeClass('jb-f-focus');
                         }
                         // Unbind document wide event handler that prevents page scrolling on using arrow keys
-                        $(document).unbind('keydown', preventPageScroll);
+                        $(document).unbind('keydown', function(event) { _this.preventPageScroll(event); });
                     }
                 },
                 /**
@@ -302,27 +337,6 @@
                 }
             });
 
-            // Mimic original element state
-            if (this.$select.is(':visible') === false) this.hide();
-            if (select.disabled) this.disable();
-
-            // Setup mouse scroll behavior for dropdown
-            var $options = this.$pseudo.data('options');
-            var option = $options.get()[0];
-            if (option.addEventListener) { // all browsers except IE before version 9
-                // Internet Explorer, Opera, Google Chrome and Safari
-                option.addEventListener("mousewheel", function(evt) { _this.preventMouseScroll(evt); }, false);
-                // Firefox
-                option.addEventListener("DOMMouseScroll", function(evt) { _this.preventMouseScroll(evt); }, false);
-            } else { // IE before version 9
-                if (option.attachEvent) option.attachEvent("onmousewheel", function(evt) { _this.preventMouseScroll(evt); });
-            }
-
-            // Monitor original element for changes on a set interval
-            //if (this.settings.observer.enabled) this.observe(select, pseudoSelect);
-
-            // Add new pseudo element to the collection
-            //this.pseudoFields.push(pseudoSelect);
         },
 
         /**
@@ -342,16 +356,13 @@
             if (typeof event.wheelDeltaY !== "undefined") delta = event.wheelDeltaY / 120;
 
             // Update scroll offset
-            this.$pseudo.data('options').scrollTop(el.scrollTop() - delta * 30);
+            this.$pseudo.data('options').scrollTop(this.$pseudo.data('options').scrollTop() - delta * 30);
         },
 
         /**
-         * Builds custom select element from parts
-         *
-         * @todo consider if we can convert this to a single DOM modification call
+         * Builds custom select DOM elements
          *
          * @private
-         * @param {object} select Unmodified <i>select</i> element
          * @return {object} Custom built pseudo <i>select</i> jQuery object
          */
         build: function()
@@ -398,8 +409,7 @@
          * Builds option list for custom dropdown
          *
          * @private
-         * @param {object} select Original <i>select</i> element
-         * @param {object} pseudoSelect jQueryfied custom <i>select</i> element
+         * @param {object} $pseudo jQueryfied custom <i>select</i> element
          * @return {undefined}
          */
         buildOptions: function($pseudo)
@@ -520,8 +530,8 @@
                         if (currentIndex !== _this.$select[0].selectedIndex) {
                             // @todo work out a way to do this without eval()
                             // onchange attribute
-                            var test = 'originalElement.onchange';
-                            var execute = 'originalElement.onchange()';
+                            var test = '_this.$select[0].onchange';
+                            var execute = '_this.$select[0].onchange()';
                             if (eval(test)) eval(execute);
 
                             // Programatically attached change() events
@@ -544,8 +554,8 @@
          * 
          *
          * @private
-         * @param {object} optgroup jQueryfied option
-         * @param {object} pseudoSelect Custom jQuery object for select element
+         * @param {object} $optgroup jQueryfied option
+         * @param {object} $pseudo Custom jQuery object for select element
          * @return {object} Pseudo jQueryfied optgroup li node with nested ul
          */
         buildOptgroup: function($optgroup, $pseudo)
@@ -604,7 +614,6 @@
         /**
          * Collapses the options list
          * @private
-         * @param {object} pseudoSelect Custom select element (jQueryfied)
          * @return {undefined}
          */
         collapse: function()
@@ -627,7 +636,6 @@
         /**
          * Expands the options list
          * @private
-         * @param {object} pseudoSelect Custom select element (jQueryfied)
          * @return {undefined}
          */
         expand: function()

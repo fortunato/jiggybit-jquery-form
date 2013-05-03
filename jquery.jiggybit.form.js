@@ -1,6 +1,17 @@
 /**
  * Assign jQuery to $ as shorthand
  */
+
+/**
+ * Get closest relative parent (for select dropdown positioning)
+var $closestRelativeParent = $elem.parents().filter(function() {
+  // reduce to only relative position or "body" elements
+  var $this = $(this);
+  return $this.is('body') || $this.css('position') == 'relative';
+}).slice(0,1); // grab only the "first" *
+
+*/
+
 (function($) {
 
     // Create jigybit namespace if doesn't exist
@@ -174,30 +185,43 @@
             
             // Let's start with some iteration over the collected form fields
             // and get the party started
+            // @todo Check if this element has already been transformed, if so
+            // it should probably be destroyed first?
             this.fields.each(function(idx) {
                 // Check if this elements hasn't already been customized
                 // first come first serve
-                if ($(this).data('jigyybit-form') !== true) {
+                //if ($(this).data('jigyybit-form') !== true) {
                     // Check the type of element we're dealing with
                     switch (this.type) {
                         case 'select-one':
-                            console.log(_this.settings);
                             try {
                                 new jiggybit.formPlugins.select(this, _this.settings);
-                            }
-                            catch(e) {
-                                if (this.settings.debug === true) {
-                                    console.log('Failed to initialise plugin', e);
+                            } catch(e) {
+                                if (_this.settings.debug === true) {
+                                    console.log('Failed to initialise select element', e);
                                 }
                             }
-//                                new jiggybit.formPlugins.select(this, _this.settings);
-//                            }
                             break;
                         case 'checkbox':
-                            if (_this.settings.checkbox.enabled === true) _this.checkboxInit(this);
+                            try {
+                                new jiggybit.formPlugins.checkbox(this, _this.settings);
+                            } catch(e) {
+                                if (_this.settings.debug === true) {
+                                    console.log('Failed to initialise checkbox element', e);
+                                }
+                            }
+                            break;
+                        case 'radio':
+                            try {
+                                new jiggybit.formPlugins.radio(this, _this.settings);
+                            } catch(e) {
+                                if (_this.settings.debug === true) {
+                                    console.log('Failed to initialise radio element', e);
+                                }
+                            }
                             break;
                     }
-                }
+                //}
                 //THIS.copyEvents(this);
             });
             

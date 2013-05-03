@@ -1,194 +1,218 @@
 (function($) {
     
-    /**
-     * Aims to extend the plugin with support for custom <input type="chekbox"> fields
-     * @type {object}
-     * 
-     * @todo On focus detect space bar key up to check/uncheck
-     */
-    jiggybit.form.plugins.checkbox = 
-    {
-        /**
-         * Default settings for replacement selects elements
-         */
-        settings: {
-            
-            /**
-             * 
-             * @type {Integer}
-             */
-            width: 10,
-            
-            /**
-             *
-             * @type {Integer}
-             */
-            height: 10
-        },
-        
-        /**
-         * Reference to the jQuerified original input element
-         * @type {HTMLElement}
-         */
-        $input: null,
-        
-        /**
-         * Contructs everything around creating the custom select element
-         * @private
-         * @param {HTMLElement} select Original element as found in DOM
-         */
-        checkboxInit: function(checkbox)
-        {
-            var THIS = this;
-            
-            // While building we only jQuerify the original <input> element once
-            $input = $(checkbox);
-            
-            // Build replacement DOM stuff
-            $pseudo = this.checkboxBuild($input);
-            
-            // Store original element reference in the custom element's data collection
-            $pseudo.data({
-                'originalElement': checkbox,
-                '$originalElement': $input
-            });
+    // Create jigybit namespace if doesn't exist
+    window.jiggybit = typeof(window.jiggybit) === 'undefined' ? {} : window.jiggybit;
+    window.jiggybit.formPlugins = typeof(window.jiggybit.formPlugins) === 'undefined' ? {} : window.jiggybit.formPlugins;
 
-            // Store original state of the original <select> so that we can 
+    /**
+     * Aims to extend the plugin with support for custom checkbox elements
+     * @todo On focus detect space bar key up to check/uncheck
+     *
+     * @param {object} select A checkbox DOM element
+     * @param {object} settings Hash with settings for this instance
+     * @returns {jiggybit.formPlugins.checkbox} Instance
+     */
+    var checkbox = function(checkbox, settings) {
+        this.settings = settings;
+        this.$checkbox = $(checkbox);
+        this.initialize();
+        return this;
+    };
+
+
+    /**
+     * Default settings to run with
+     */
+    checkbox.defaults = {
+
+        /**
+         * Pseudo checkbox width
+         * @type {integer}
+         */
+        width: 10,
+
+        /**
+         * Pseudo checkbox height
+         * @type {integer}
+         */
+        height: 10,
+
+        className: ''
+    };
+
+    /**
+     * Methods in this object are not to be accessed publically
+     * @type {object}
+     */
+    checkbox.prototype = {
+
+        /**
+         * 
+         */
+        $checkbox: null,
+
+        /**
+         *
+         */
+        $pseudo: null,
+
+        /**
+         * 
+         */
+        $tick: null,
+
+        initialize: function()
+        {
+            var _this = this;
+
+            // Build replacement DOM stuff
+            this.$pseudo = this.build();
+            this.$tick = this.$pseudo.find('.jb-f-checkbox-tick');
+
+            // Store original state of the original <select> so that we can
             // return it to its original state when requested
-            $pseudo.data('originalState', {
+            this.$pseudo.data('originalState', {
                 css: {
-                    position: $input.css('position'),
-                    left: $input.css('left'),
-                    top: $input.css('top')
+                    position: this.$checkbox.css('position'),
+                    left: this.$checkbox.css('left'),
+                    top: this.$checkbox.css('top')
                 },
                 attr: {
-                    tabindex: $input.attr('tabindex')
+                    tabindex: this.$checkbox.attr('tabindex')
                 }
             });
-            
+
             // Insert pseudo element in DOM
-            $pseudo.insertAfter($input);
-            
+            this.$pseudo.insertAfter(this.$checkbox);
+
             // Move original element out of view
-            $input.css({
+            this.$checkbox.css({
                     position: 'absolute',
                     left: -10000,
                     top: -10000
                 })
                 // And make sure that the tabindex behaves properly
                 .attr('tabindex', -1);
-                
-            if (checkbox.id) {
-                $('label[for="' + checkbox.id + '"]').each(function() {
+
+            if (this.$checkbox[0].id) {
+                $('label[for="' + this.$checkbox[0].id + '"]').each(function() {
+                    var $label = $(this);
                     // Update for attribute
-                    $(this).attr('for', $pseudo.attr('id'));
-                    $(this).click(function(event) {
+                    $label.attr('for', _this.$pseudo.attr('id'));
+                    $label.click(function(event) {
                         event.preventDefault();
-                        var identifier = $(this).attr('for');
-                        $('#'+identifier).trigger('click');
+                        $('#' + this.getAttribute('for') ).trigger('click');
                     });
                 });
             }
 
             // Setup event listeners
-            $pseudo.bind({
+            this.setupEventListeners();
+
+            // Get default state across
+            if (this.$checkbox[0].checked) this.check();
+            else this.unCheck();
+
+            // Mimic original element state
+            if (this.$checkbox.is(':visible') === false) this.hide();
+            if (this.$checkbox[0].disabled) this.disable();
+        },
+
+        setupEventListeners: function()
+        {
+            var _this = this;
+        
+            this.$pseudo.bind({
                 mouseover: function() {
-                    var $pseudo = $(this);
                     // Check if its disabled before adding a CSS class to mark the state
-                    //if (!pseudoSelect.data('state').disabled) {
-                    var state = $pseudo.data('state');
-                    if (state == undefined || !$pseudo.data('state').disabled) {
-                        $pseudo.addClass('jb-f-hover');
+                    var state = _this.$pseudo.data('state');
+                    if (state === undefined || !state.disabled) {
+                        _this.$pseudo.addClass('jb-f-hover');
                     }
                 },
                 mouseout: function() {
-                    var $pseudo = $(this);
                     // Check if its disabled before adding a CSS class to unmark the state
-                    var state = $pseudo.data('state');
-                    if (state == undefined || !$pseudo.data('state').disabled) {
-                        $pseudo.removeClass('jb-f-hover');
+                    var state = _this.$pseudo.data('state');
+                    if (state === undefined || !state.disabled) {
+                        _this.$pseudo.removeClass('jb-f-hover');
                     }
                 },
                 click: function() {
-                    var $pseudo = $(this),
-                        original = $pseudo.data('originalElement'),
-                        state = $pseudo.data('state');
+                    var state = _this.$pseudo.data('state');
                     // Check if its disabled before determining whether collapse/expand is in order
-                    if (state == undefined || !$pseudo.data('state').disabled) {
-                        if (original.checked) THIS.checkboxUnCheck($pseudo);
-                        else THIS.checkboxCheck($pseudo);
-                        
-                        $pseudo.focus();
+                    if (state === undefined || !state.disabled) {
+                        if (_this.$checkbox[0].checked) _this.unCheck();
+                        else _this.check();
+                        // Focus on custom checkbox
+                        _this.$pseudo.focus();
                     }
                 },
                 focus: function() {
-                    var $pseudo = $(this);
-                    var state = $pseudo.data('state');
-                    if (state == undefined || !$pseudo.data('state').disabled) {
+                    var state = _this.$pseudo.data('state');
+                    if (state === undefined || !state.disabled) {
                         // Mark element as focused
-                        $pseudo.addClass('jb-f-focus');
+                        _this.$pseudo.addClass('jb-f-focus');
                     }
                 },
                 blur: function() {
-                    var $pseudo = $(this);
-                    var state = $pseudo.data('state');
-                    if (state == undefined || !$pseudo.data('state').disabled) {
+                    var state = _this.$pseudo.data('state');
+                    if (state === undefined || !state.disabled) {
                         // Stop mark as focused
-                        $pseudo.removeClass('jb-f-focus');
+                        _this.$pseudo.removeClass('jb-f-focus');
                     }
                 }
             });
-            
-            // Get default state across
-            if (checkbox.checked) THIS.checkboxCheck($pseudo);
-            else THIS.checkboxUnCheck($pseudo);
-
-            // Mimic original element state
-            if ($input.is(':visible') == false) this.hide($pseudo);
-            if (checkbox.disabled) this.disable($pseudo);
         },
-        
+
         /**
-         * @todo create inner wrapper so that outer one can be absolutely positioned
+         * Builds custom checkbox DOM elements
+         *
+         * @returns {unresolved}
          */
-        checkboxBuild: function($input)
+        build: function()
         {
-            var input = $input[0];
             // Create custom element
-            var $pseudo = $(document.createElement('div'))
+            var $pseudo = $(document.createElement('a'))
                 .attr({
                     // Copy the tab index of the original element across
-                    tabindex: input.tabindex ? input.tabindex : 0,
+                    tabindex: this.$checkbox.attr('tabindex') ? this.$checkbox.attr('tabindex') : 0,
                     // Give it a unique id attribute
-                    id: input.id ? input.id + '-pseudo' : 'pseudo-' + new Date().getTime()
+                    id: this.$checkbox[0].id ? this.$checkbox[0].id + '-pseudo' : 'pseudo-' + new Date().getTime()
                 })
-                .addClass('jb-f-checkbox' + (this.settings.checkbox.className != '' ? ' ' + this.settings.checkbox.className : ''))
+                .addClass('jb-f-checkbox' + (this.settings.checkbox.className !== '' ? ' ' + this.settings.checkbox.className : ''))
                 .css({
                     width: this.settings.checkbox.width,
                     height: this.settings.checkbox.height
                 });
 
-            var $tick = $(document.createElement('div'))
+            // Create tick
+            $(document.createElement('span'))
                 .addClass('jb-f-checkbox-tick')
                 .hide()
                 .appendTo($pseudo);
-            
+
             return $pseudo;
         },
 
-        checkboxCheck: function($pseudo)
+        check: function()
         {
-            var original = $pseudo.data('originalElement');
-            original.checked = true;
-            $pseudo.find('.jb-f-checkbox-tick').show();
+            this.$checkbox[0].checked = true;
+            this.$pseudo.find('.jb-f-checkbox-tick').show();
         },
-        
-        checkboxUnCheck: function($pseudo)
+
+        unCheck: function()
         {
-            var original = $pseudo.data('originalElement');
-            original.checked = false;
-            $pseudo.find('.jb-f-checkbox-tick').hide();
+            this.$checkbox[0].checked = false;
+            this.$pseudo.find('.jb-f-checkbox-tick').hide();
+        },
+
+        destroy: function()
+        {
+            
+
         }
     };
-    
+
+    jiggybit.formPlugins.checkbox = checkbox;
+
 })(jQuery);

@@ -15,7 +15,7 @@
                 <legend>Example 01</legend>
                 <div>
                     <label for="how-many-limbs">How many limbs does a typical human being carry?</label>
-                    <select name="how-many-limbs" class="simple" id="how-many-limbs">
+                    <select name="how-many-limbs" class="simple" id="how-many-limbs" tabindex="2">
                         <option value="">Select ...</option>
                         <option value="1">One</option>
                         <option value="2">Two</option>
@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <label>Please select an option in one of the groups:</label>
-                    <select name="favorite-group" class="optgroups">
+                    <select name="favorite-group" class="optgroups" tabindex="3">
                         <option value="">Select ...</option>
                         <optgroup label="Group 1">
                             <option value="1">One</option>
@@ -41,13 +41,20 @@
                         <option value="6">Six</option>
                     </select>
                 </div>
+                <br />
                 <div>
                     <label for="check-me">Check me:</label>
-                    <input type="checkbox" name="checkme" id="check-me" />
+                    <input type="checkbox" name="checkme" id="check-me" tabindex="3" />
                 </div>
                 <div>
                     <label for="another-checkbox">Check me too:</label>
-                    <input type="checkbox" name="anothercheckbox" id="another-checkbox" />
+                    <input type="checkbox" name="anothercheckbox" id="another-checkbox" tabindex="4" />
+                </div>
+                <br />
+                <div>
+                    <label>Who wins?:</label>
+                    <label for="pick-one-1"><input type="radio" value="tesla" name="pick-one" id="pick-one-1" tabindex="5" /> Nikola Tesla</label>
+                    <label for="pick-one-2"><input type="radio" value="edison" name="pick-one" id="pick-one-2" tabindex="6" /> Thomas Edison</label>
                 </div>
             </fieldset>
         </form>
@@ -79,12 +86,26 @@
             var jbFormCheckbox = $('input[type="checkbox"]').JiggybitForm({
                 debug: true,
                 checkbox: {
-                    className: 'very-jiggy'
+                    className: 'very-jiggy',
+                    width: 12,
+                    height: 12
                 },
                 observer: {
                     enabled: false
                 }
             });
+            var jbFormRadio = $('input[type="radio"]').JiggybitForm({
+                debug: true,
+                radio: {
+                    className: 'tunes',
+                    width: 12,
+                    height: 12
+                },
+                observer: {
+                    enabled: false
+                }
+            });
+
 //            var jbFormSimple2 = $('select.optgroups').JiggybitForm({
 //                debug: true,
 //                select: {

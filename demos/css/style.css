@@ -74,7 +74,7 @@ div.jb-f-select {
 
     /* Other */
     border: 1px solid #d4d4d4;
-
+    height: 24px;
 }
 /*div.select:hover,*/
 div.jb-f-select.jb-f-hover {
@@ -112,7 +112,8 @@ div.jb-f-select.jb-f-focus {
         display: block;
         height: 24px;
         width: 24px;
-        background: url(/images/select-arrow.gif) no-repeat;
+        background: url('../images/select-arrow.png') no-repeat 50% 50%;
+        border-left: 1px solid #CCC;
     }
 
 ul.jb-f-select-options {
@@ -172,6 +173,7 @@ ul.jb-f-select-options {
     }
         ul.jb-f-select-options li.jb-f-selected span {
             font-weight: bold;
+            font-style: italic;
         }
 
 
@@ -199,23 +201,48 @@ div.select span.colour {
 
 */
 
-
-div.jb-f-checkbox {
+/* input[type="checkbox"] */
+a.jb-f-checkbox {
     display: inline-block;
     position: relative;
     margin-bottom: -2px;
     
     border: 1px solid #CCC;
     border-radius: 2px;
+    outline: 0;
+    -moz-user-focus: normal;
 }
-
-    div.jb-f-checkbox-tick {
+    span.jb-f-checkbox-tick {
         background: red;
-        width: 8px;
-        height: 8px;
+        width: 32px;
+        height: 32px;
         position: absolute;
-        top: 1px;
+        bottom: 1px;
         left: 1px;
+        background: url('../images/checkbox-tick.png') no-repeat bottom left;
+        z-index: 1;
+    }
+
+/* input[type="radio"] */
+a.jb-f-radio {
+    display: inline-block;
+    position: relative;
+    margin-bottom: -2px;
+
+    border: 1px solid #CCC;
+    border-radius: 6px;
+    outline: 0;
+    -moz-user-focus: normal;
+}
+    span.jb-f-radio-tick {
+        background: red;
+        width: 32px;
+        height: 32px;
+        position: absolute;
+        bottom: 1px;
+        left: 1px;
+        background: url('../images/checkbox-tick.png') no-repeat bottom left;
+        z-index: 1;
     }
 
 
