@@ -111,10 +111,20 @@
          */
         optionCount: 0,
 
+        /**
+         *
+         * @type {object}
+         */
+        originalState: {},
+
         initialize: function()
         {
             var _this = this;
             
+            // Store reference to this object instance on the data collection of
+            // the original DOM element for the sake of publically exposing it
+            this.$select.data('jb-f-element', this);
+
             // Build replacement DOM stuff
             this.$pseudo = this.build();
             // @todo
@@ -122,7 +132,7 @@
 
             // Store original state of the original <select> so that we can
             // return it to its original state when requested
-            this.$pseudo.data('originalState', {
+            this.originalState = {
                 css: {
                     position: this.$select.css('position'),
                     left: this.$select.css('left'),
@@ -131,7 +141,7 @@
                 attr: {
                     tabindex: this.$select.attr('tabindex')
                 }
-            });
+            };
 
             // Insert pseudo element in DOM
             this.$pseudo.insertAfter(this.$select);
@@ -184,12 +194,6 @@
             } else { // IE before version 9
                 if (option.attachEvent) option.attachEvent("onmousewheel", function(evt) { _this.preventMouseScroll(evt); });
             }
-
-            // Monitor original element for changes on a set interval
-            //if (this.settings.observer.enabled) this.observe(select, pseudoSelect);
-
-            // Add new pseudo element to the collection
-            //this.pseudoFields.push(pseudoSelect);
         },
 
         /**
@@ -263,7 +267,10 @@
                  * @todo Check if dropdown is expanded. If so make up/down behave as native with dropdown
                  *          Pressing enter should collapse the dropdown in that case
                  * @todo make this work with optgroup
-                 */
+                  *
+                  * @param {object} event
+                  * @returns {undefined}
+                  */
                 keyup: function(event) {
                     // Check if is not disabled
                     var state = _this.$pseudo.data('state');
@@ -549,6 +556,7 @@
                 })
                 // IE6 layout hack so that not only the text is sensitive for
                 // the mouseover and click events
+                // @todo consider moving this to CSS or remove it altogether
                 .css('zoom', 1);
         },
 
@@ -671,6 +679,29 @@
             // Drop it, but check if a callback needs to be triggered first
             if (this.settings.select.animateExpand) this.settings.animateExpand(this.$pseudo, css.top, css.left);
             else $options.show();
+        },
+
+        /**
+         * Destroys pseudo DOM elements and unbinds events as well as the
+         * reference to this instance which is stored on the data collection
+         * of the original select DOM element. It should at that point get
+         * cleared from memory
+         * @public
+         * @returns {undefined}
+         */
+        destroy: function()
+        {
+            // Remove pseudo element form DOM and remove the associated data and
+            // events
+            this.$pseudo.remove();
+
+            // Restore state of original element
+            this.$select.css(this.originalState.css);
+            this.$select.attr(this.originalState.attr);
+
+            // And finally remove the reference to this instance from the original
+            // select element
+            this.$select.removeData('jb-f-element');
         }
     };
 

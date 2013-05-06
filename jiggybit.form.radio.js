@@ -38,6 +38,9 @@
          */
         height: 10,
 
+        /**
+         * @type {string}
+         */
         className: ''
     };
 
@@ -48,24 +51,36 @@
     radio.prototype = {
 
         /**
-         *
+         * @type {object}
          */
         $radio: null,
 
         /**
-         *
+         * @type {object}
          */
         $pseudo: null,
 
         /**
          *
+         * @type {object}
          */
         $tick: null,
+
+        /**
+         * 
+         * @type {object}
+         */
+        originalState: {},
 
         initialize: function()
         {
             var _this = this;
 
+            // Store reference to this object instance on the data collection of
+            // the original DOM element for the sake of publically exposing it
+            this.$radio.data('jb-f-element', this);
+
+            // Get other radio buttons that share the name for global unchecking
             this.$others = this.$radio.parents('form').find('input[name="'+ this.$radio[0].name +'"]').not(this.$radio);
 
             // Build replacement DOM stuff
@@ -74,7 +89,7 @@
            
             // Store original state of the original <select> so that we can
             // return it to its original state when requested
-            this.$pseudo.data('originalState', {
+            this.originalState = {
                 css: {
                     position: this.$radio.css('position'),
                     left: this.$radio.css('left'),
@@ -83,7 +98,7 @@
                 attr: {
                     tabindex: this.$radio.attr('tabindex')
                 }
-            });
+            };
 
             // Insert pseudo element in DOM
             this.$pseudo.insertAfter(this.$radio);
@@ -110,7 +125,6 @@
             }
 
             // Setup event listeners
-            console.log('setupEventListeners');
             this.setupEventListeners();
 
             // Get default state across
@@ -125,8 +139,6 @@
         setupEventListeners: function()
         {
             var _this = this;
-
-            console.log('once');
 
             this.$pseudo.bind({
                 mouseover: function() {
@@ -146,7 +158,7 @@
                 click: function(event) {
                     event.stopPropagation(); // In case input is wrapped in label
                     var state = _this.$pseudo.data('state');
-                    // Check if its disabled before determining whether collapse/expand is in order
+                    // Check if its disabled before determining whether checking/unchecking is in order
                     if (state === undefined || !state.disabled) {
                         if (_this.$radio[0].checked) _this.unCheck();
                         else _this.check();
@@ -201,21 +213,54 @@
             return $pseudo;
         },
 
+        /**
+         * @public
+         * @returns {undefined}
+         */
         check: function()
         {
+            // Uncheck others before checking the current one. We assume that all
+            // radio buttons that go by this name are customised using this plugin
+            $.each(this.$others, function(idx) {
+                $(this).JiggybitForm().unCheck();
+            });
 
+            this.$radio[0].checked = true;
+            this.$tick.show();
         },
 
+        /**
+         * @public
+         * @returns {undefined}
+         */
         unCheck: function()
         {
-
+            this.$radio[0].checked = false;
+            this.$tick.hide();
         },
 
+        /**
+         * Destroys pseudo DOM elements and unbinds events as well as the
+         * reference to this instance which is stored on the data collection
+         * of the original checkbox DOM element. It should at that point get
+         * cleared from memory
+         * @public
+         * @returns {undefined}
+         */
         destroy: function()
         {
+            // Remove pseudo element form DOM and remove the associated data and
+            // events
+            this.$pseudo.remove();
 
+            // Restore state of original element
+            this.$radio.css(this.originalState.css);
+            this.$radio.attr(this.originalState.attr);
+
+            // And finally remove the reference to this instance from the original
+            // radio button
+            this.$radio.removeData('jb-f-element');
         }
-
     };
 
     jiggybit.formPlugins.radio = radio;

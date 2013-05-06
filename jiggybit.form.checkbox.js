@@ -64,9 +64,19 @@
          */
         $tick: null,
 
+        /**
+         *
+         * @type {object}
+         */
+        originalState: {},
+
         initialize: function()
         {
             var _this = this;
+
+            // Store reference to this object instance on the data collection of
+            // the original DOM element for the sake of publically exposing it
+            this.$checkbox.data('jb-f-element', this);
 
             // Build replacement DOM stuff
             this.$pseudo = this.build();
@@ -74,16 +84,16 @@
 
             // Store original state of the original <select> so that we can
             // return it to its original state when requested
-            this.$pseudo.data('originalState', {
-                    css: {
-                        position: this.$checkbox.css('position'),
-                        left: this.$checkbox.css('left'),
-                        top: this.$checkbox.css('top')
-                    },
-                    attr: {
-                        tabindex: this.$checkbox.attr('tabindex')
-                    }
-                });
+            this.originalState = {
+                css: {
+                    position: this.$checkbox.css('position'),
+                    left: this.$checkbox.css('left'),
+                    top: this.$checkbox.css('top')
+                },
+                attr: {
+                    tabindex: this.$checkbox.attr('tabindex')
+                }
+            };
 
             // Insert pseudo element in DOM
             this.$pseudo.insertAfter(this.$checkbox);
@@ -143,7 +153,7 @@
                 click: function(event) {
                     event.stopPropagation(); // In case input is wrapped in label
                     var state = _this.$pseudo.data('state');
-                    // Check if its disabled before determining whether collapse/expand is in order
+                    // Check if its disabled before determining whether check/uncheckis in order
                     if (state === undefined || !state.disabled) {
                         if (_this.$checkbox[0].checked) _this.unCheck();
                         else _this.check();
@@ -198,22 +208,47 @@
             return $pseudo;
         },
 
+        /**
+         * @public
+         * @returns {undefined}
+         */
         check: function()
         {
             this.$checkbox[0].checked = true;
-            this.$pseudo.find('.jb-f-checkbox-tick').show();
+            this.$tick.show();
         },
 
+        /**
+         * @public
+         * @returns {undefined}
+         */
         unCheck: function()
         {
             this.$checkbox[0].checked = false;
-            this.$pseudo.find('.jb-f-checkbox-tick').hide();
+            this.$tick.hide();
         },
 
+        /**
+         * Destroys pseudo DOM elements and unbinds events as well as the
+         * reference to this instance which is stored on the data collection
+         * of the original checkbox DOM element. It should at that point get
+         * cleared from memory
+         * @public
+         * @returns {undefined}
+         */
         destroy: function()
         {
-            
+            // Remove pseudo element form DOM and remove the associated data and
+            // events
+            this.$pseudo.remove();
 
+            // Restore state of original element
+            this.$checkbox.css(this.originalState.css);
+            this.$checkbox.attr(this.originalState.attr);
+
+            // And finally remove the reference to this instance from the original
+            // checkbox
+            this.$checkbox.removeData('jb-f-element');
         }
     };
 

@@ -25,12 +25,22 @@ var $closestRelativeParent = $elem.parents().filter(function() {
         
         /**
          * Build plugin from parts.
-         * The reason I did not nest the code straight into the extend 
+         * The reason I did not nest the hash straight into the extend
          * method is so that an IDE is able to make sense of the structure and 
-         * JSDoc.
+         * JSDoc :/
+         * @param {object} options Options hash for this instance
          * @return {$.fn.JiggybitForm}
          */
         JiggybitForm: function(options) {
+
+            // When selector only finds one DOM element, return element class
+            // for the sake of exposing some public methods as an API
+            if (this.length === 1) {
+                if (this.data('jb-f-element') !== undefined) {
+                    return this.data('jb-f-element');
+                }
+            }
+
             // Iterate available plugins
             for (plugin in jiggybit.formPlugins) {
                 // Use plugin defaults
@@ -182,18 +192,14 @@ var $closestRelativeParent = $elem.parents().filter(function() {
             for (var x in this.enabledPlugins) {
                 this.settings[this.enabledPlugins[x]].enabled = true;
             }
-            console.log('???');
             
             // Let's start with some iteration over the collected form fields
             // and get the party started
-            // @todo Check if this element has already been transformed, if so
-            // it should probably be destroyed first?
             this.fields.each(function(idx) {
                 // Check if this elements hasn't already been customized
                 // first come first serve
-                //if ($(this).data('jigyybit-form') !== true) {
+                if ($(this).data('jb-f-element') === undefined) {
                     // Check the type of element we're dealing with
-                    console.log(this.type);
                     switch (this.type) {
                         case 'select-one':
                             try {
@@ -223,8 +229,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                             }
                             break;
                     }
-                //}
-                //THIS.copyEvents(this);
+                }
             });
             
             // Monitor original element for changes on a set interval when 
@@ -306,7 +311,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
             });
 
             // Additional relevant attribute for single select elements
-            if (original.type == 'select-one') {
+            if (original.type === 'select-one') {
                 pseudo.data('state').selectedIndex = original.selectedIndex;
             }
 
@@ -323,7 +328,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                 }
                 
                 // Check if element was enabled/disabled since last call
-                if (el.data('state').disabled != originalEl.disabled) {
+                if (el.data('state').disabled !== originalEl.disabled) {
                     el.data('state').disabled = originalEl.disabled;
                     if (originalEl.disabled) {
                         $this.disable(el);
@@ -333,7 +338,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                 }
                 // Check if visibility of the original element has changed
                 var visible = $(originalEl).is(":visible");
-                if (el.data('state').visible != visible) {
+                if (el.data('state').visible !== visible) {
                     el.data('state').visible = visible;
                     if (visible) {
                         $this.show(el);
@@ -342,9 +347,9 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                     }
                 }
                 // Check if selectedIndex on the original element has changed
-                if (originalEl.type == 'select-one') {
+                if (originalEl.type === 'select-one') {
                     var selectedIndex = originalEl.selectedIndex;
-                    if (el.data('state').selectedIndex != selectedIndex) {
+                    if (el.data('state').selectedIndex !== selectedIndex) {
                         el.data('state').selectedIndex = selectedIndex;
                         // Reflect change on replacement select
                         $this.select(el, selectedIndex);
@@ -362,7 +367,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                 $.each(classNames, function() {
                     var cssClass = this.toString();
                     // Don't remove 'special' class names
-                    if ((' jb-f-select jb-f-focus jb-f-hover '+$this.settings.className+' '+originalEl.className+' ').indexOf(' '+cssClass+' ') == -1) {
+                    if ((' jb-f-select jb-f-focus jb-f-hover '+$this.settings.className+' '+originalEl.className+' ').indexOf(' '+cssClass+' ') === -1) {
                         el.removeClass(cssClass);
                     }
                 });
@@ -372,7 +377,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                     $(originalEl).children('option').each(function(idx) {
                         // Find corresponding <li>
                         var li = el.data('dropdown').children('.option:nth-child(' + (idx + 1) + ')');
-                        if ($(this).is(':disabled') == true) {
+                        if ($(this).is(':disabled') === true) {
                             if (!li.hasClass('disabled')) {
                                 li.addClass('disabled');
                             }
@@ -427,28 +432,22 @@ var $closestRelativeParent = $elem.parents().filter(function() {
          */
         destroy: function()
         {
-            var THIS = this;
+            var _this = this;
             
             // @todo Clear observer interval
             
+            
             // Iterate fields 
-            $.each(this.pseudoFields, function(idx) {
-                var jqThis = $(this);
-                
-                // Retrieve original element and state from reference
-                var original = jqThis.data('originalElement');
-                var originalState = jqThis.data('originalState');
-                
-                // Restore original state of the original element
-                $(original)
-                    .css(originalState.css)
-                    .attr(originalState.attr);
-                
-                // Remove pseudo stuff from the DOM
-                if (original.type == 'select-one') {
-                    jqThis.data('options').remove();
+            $.each(this.fields, function(idx) {
+                var $input = $(this);
+                // Destroy element instance
+                try {
+                    $input.JiggybitForm().destroy();
+                } catch (e) {
+                    if (this.settings.debug === true) {
+                        console.log('Error occurred while attempting to destroy the following element', $input, e);
+                    }
                 }
-                jqThis.remove();
             });
         }
     };
