@@ -172,7 +172,7 @@
 
             // Store original element reference in the custom element's data collection
             // @todo consider storing a reference to the jQuerified select instead
-            this.$pseudo.data('originalElement', this.$select[0]);
+            //this.$pseudo.data('originalElement', this.$select[0]);
 
             // Get default value across
             this.select(this.$select[0].selectedIndex);
