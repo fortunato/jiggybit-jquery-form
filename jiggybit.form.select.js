@@ -1,8 +1,10 @@
 (function($) {
 
+    /*global window*/
+
     // Create jigybit namespace if doesn't exist
-    window.jiggybit = typeof(window.jiggybit) === 'undefined' ? {} : window.jiggybit;
-    window.jiggybit.formPlugins = typeof(window.jiggybit.formPlugins) === 'undefined' ? {} : window.jiggybit.formPlugins;
+    window.jiggybit = window.jiggybit === undefined ? {} : window.jiggybit;
+    window.jiggybit.formPlugins = window.jiggybit.formPlugins === undefined ? {} : window.jiggybit.formPlugins;
 
     /**
      * Constructor

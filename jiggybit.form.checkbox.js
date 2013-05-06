@@ -1,14 +1,17 @@
+
 (function($) {
-    
+
+    /* global window */
+
     // Create jigybit namespace if doesn't exist
-    window.jiggybit = typeof(window.jiggybit) === 'undefined' ? {} : window.jiggybit;
-    window.jiggybit.formPlugins = typeof(window.jiggybit.formPlugins) === 'undefined' ? {} : window.jiggybit.formPlugins;
+    window.jiggybit = window.jiggybit === undefined ? {} : window.jiggybit;
+    window.jiggybit.formPlugins = window.jiggybit.formPlugins === undefined ? {} : window.jiggybit.formPlugins;
 
     /**
      * Aims to extend the plugin with support for custom checkbox elements
      * @todo On focus detect space bar key up to check/uncheck
      *
-     * @param {object} select A checkbox DOM element
+     * @param {object} checkbox A checkbox DOM element
      * @param {object} settings Hash with settings for this instance
      * @returns {jiggybit.formPlugins.checkbox} Instance
      */
@@ -72,15 +75,15 @@
             // Store original state of the original <select> so that we can
             // return it to its original state when requested
             this.$pseudo.data('originalState', {
-                css: {
-                    position: this.$checkbox.css('position'),
-                    left: this.$checkbox.css('left'),
-                    top: this.$checkbox.css('top')
-                },
-                attr: {
-                    tabindex: this.$checkbox.attr('tabindex')
-                }
-            });
+                    css: {
+                        position: this.$checkbox.css('position'),
+                        left: this.$checkbox.css('left'),
+                        top: this.$checkbox.css('top')
+                    },
+                    attr: {
+                        tabindex: this.$checkbox.attr('tabindex')
+                    }
+                });
 
             // Insert pseudo element in DOM
             this.$pseudo.insertAfter(this.$checkbox);
@@ -137,7 +140,8 @@
                         _this.$pseudo.removeClass('jb-f-hover');
                     }
                 },
-                click: function() {
+                click: function(event) {
+                    event.stopPropagation(); // In case input is wrapped in label
                     var state = _this.$pseudo.data('state');
                     // Check if its disabled before determining whether collapse/expand is in order
                     if (state === undefined || !state.disabled) {

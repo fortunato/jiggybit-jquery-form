@@ -1,13 +1,15 @@
 (function($) {
 
+    /* global window */
+
     // Create jigybit namespace if doesn't exist
-    window.jiggybit = typeof(window.jiggybit) === 'undefined' ? {} : window.jiggybit;
-    window.jiggybit.formPlugins = typeof(window.jiggybit.formPlugins) === 'undefined' ? {} : window.jiggybit.formPlugins;
+    window.jiggybit = window.jiggybit === undefined ? {} : window.jiggybit;
+    window.jiggybit.formPlugins = window.jiggybit.formPlugins === undefined ? {} : window.jiggybit.formPlugins;
 
     /**
      * Aims to extend the plugin with support for custom radio elements
      *
-     * @param {object} select A radio DOM element
+     * @param {object} radio A radio DOM element
      * @param {object} settings Hash with settings for this instance
      * @returns {jiggybit.formPlugins.radio} Instance
      */
@@ -64,12 +66,12 @@
         {
             var _this = this;
 
-            this.$others = this.$radio.parents('form').find('radio[name="'+ this.$radio[0].name +'"]').not(this.$radio);
+            this.$others = this.$radio.parents('form').find('input[name="'+ this.$radio[0].name +'"]').not(this.$radio);
 
             // Build replacement DOM stuff
             this.$pseudo = this.build();
             this.$tick = this.$pseudo.find('.jb-f-radio-tick');
-            
+           
             // Store original state of the original <select> so that we can
             // return it to its original state when requested
             this.$pseudo.data('originalState', {
@@ -108,6 +110,7 @@
             }
 
             // Setup event listeners
+            console.log('setupEventListeners');
             this.setupEventListeners();
 
             // Get default state across
@@ -122,6 +125,8 @@
         setupEventListeners: function()
         {
             var _this = this;
+
+            console.log('once');
 
             this.$pseudo.bind({
                 mouseover: function() {
@@ -138,7 +143,8 @@
                         _this.$pseudo.removeClass('jb-f-hover');
                     }
                 },
-                click: function() {
+                click: function(event) {
+                    event.stopPropagation(); // In case input is wrapped in label
                     var state = _this.$pseudo.data('state');
                     // Check if its disabled before determining whether collapse/expand is in order
                     if (state === undefined || !state.disabled) {

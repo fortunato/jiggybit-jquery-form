@@ -182,6 +182,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
             for (var x in this.enabledPlugins) {
                 this.settings[this.enabledPlugins[x]].enabled = true;
             }
+            console.log('???');
             
             // Let's start with some iteration over the collected form fields
             // and get the party started
@@ -192,6 +193,7 @@ var $closestRelativeParent = $elem.parents().filter(function() {
                 // first come first serve
                 //if ($(this).data('jigyybit-form') !== true) {
                     // Check the type of element we're dealing with
+                    console.log(this.type);
                     switch (this.type) {
                         case 'select-one':
                             try {
